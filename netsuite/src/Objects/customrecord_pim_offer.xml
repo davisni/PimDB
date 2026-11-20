@@ -1,0 +1,247 @@
+<customrecordtype scriptid="customrecord_pim_offer">
+  <accesstype>CUSTRECORDENTRYPERM</accesstype>
+  <allowattachments>F</allowattachments>
+  <allowinlinedeleting>F</allowinlinedeleting>
+  <allowinlinedetaching>F</allowinlinedetaching>
+  <allowinlineediting>T</allowinlineediting>
+  <allowquickadd>F</allowquickadd>
+  <allowquicksearch>T</allowquicksearch>
+  <allowuiaccess>T</allowuiaccess>
+  <description>One item sold on one channel from one seller account. Holds the commercial terms only; listing content lives in the PIM.</description>
+  <enablenumbering>T</enablenumbering>
+  <enablesystemnotes>T</enablesystemnotes>
+  <includeinsearchmenu>T</includeinsearchmenu>
+  <includename>T</includename>
+  <isinactive>F</isinactive>
+  <numberinginit>1</numberinginit>
+  <numberingmindigits>6</numberingmindigits>
+  <numberingprefix>OFR-</numberingprefix>
+  <recordname>PIM Offer</recordname>
+  <showid>T</showid>
+  <showlastmodified>T</showlastmodified>
+  <shownotes>T</shownotes>
+  <customrecordcustomfields>
+
+    <!-- What is sold, where -->
+    <customrecordcustomfield scriptid="custrecord_pim_ofr_item">
+      <accesslevel>2</accesslevel>
+      <description>The inventory item being sold.</description>
+      <displaytype>NORMAL</displaytype>
+      <fieldtype>SELECT</fieldtype>
+      <help>The inventory item being sold.</help>
+      <ismandatory>T</ismandatory>
+      <isparent>T</isparent>
+      <label>Item</label>
+      <onparentdelete>NO_ACTION</onparentdelete>
+      <searchlevel>2</searchlevel>
+      <selectrecordtype>-10</selectrecordtype>
+      <showinlist>T</showinlist>
+      <storevalue>T</storevalue>
+    </customrecordcustomfield>
+
+    <customrecordcustomfield scriptid="custrecord_pim_ofr_account">
+      <accesslevel>2</accesslevel>
+      <description>The seller account making the offer. Shown as "Sold by" on the channel.</description>
+      <displaytype>NORMAL</displaytype>
+      <fieldtype>SELECT</fieldtype>
+      <help>The seller account making the offer. Shown as "Sold by" on the channel.</help>
+      <ismandatory>T</ismandatory>
+      <isparent>F</isparent>
+      <label>Seller Account</label>
+      <onparentdelete>NO_ACTION</onparentdelete>
+      <searchlevel>2</searchlevel>
+      <selectrecordtype>[scriptid=customrecord_ecommerce_accounts]</selectrecordtype>
+      <showinlist>T</showinlist>
+      <storevalue>T</storevalue>
+    </customrecordcustomfield>
+
+    <customrecordcustomfield scriptid="custrecord_pim_ofr_channel">
+      <accesslevel>2</accesslevel>
+      <description>Sales channel: amazon, ebay, walmart or a Shopify store code.</description>
+      <displaytype>NORMAL</displaytype>
+      <fieldtype>TEXT</fieldtype>
+      <help>Sales channel: amazon, ebay, walmart or a Shopify store code.</help>
+      <ismandatory>T</ismandatory>
+      <label>Channel</label>
+      <searchlevel>2</searchlevel>
+      <showinlist>T</showinlist>
+      <storevalue>T</storevalue>
+    </customrecordcustomfield>
+
+    <customrecordcustomfield scriptid="custrecord_pim_ofr_variant">
+      <accesslevel>2</accesslevel>
+      <description>The angle this listing takes: an equipment make, a reference number, or blank.</description>
+      <displaytype>NORMAL</displaytype>
+      <fieldtype>TEXT</fieldtype>
+      <help>The angle this listing takes: an equipment make, a reference number, or blank.</help>
+      <ismandatory>F</ismandatory>
+      <label>Variant</label>
+      <searchlevel>2</searchlevel>
+      <showinlist>T</showinlist>
+      <storevalue>T</storevalue>
+    </customrecordcustomfield>
+
+    <customrecordcustomfield scriptid="custrecord_pim_ofr_sku">
+      <accesslevel>2</accesslevel>
+      <description>The SKU the channel knows this offer by. Must be unique per seller account and channel.</description>
+      <displaytype>NORMAL</displaytype>
+      <fieldtype>TEXT</fieldtype>
+      <globalsearch>T</globalsearch>
+      <help>The SKU the channel knows this offer by. Must be unique per seller account and channel.</help>
+      <ismandatory>T</ismandatory>
+      <label>Seller SKU</label>
+      <searchlevel>2</searchlevel>
+      <showinlist>T</showinlist>
+      <storevalue>T</storevalue>
+    </customrecordcustomfield>
+
+    <!-- Commercial terms -->
+    <customrecordcustomfield scriptid="custrecord_pim_ofr_price">
+      <accesslevel>2</accesslevel>
+      <applyformatting>T</applyformatting>
+      <description>Selling price for this offer.</description>
+      <displaytype>NORMAL</displaytype>
+      <fieldtype>CURRENCY</fieldtype>
+      <help>Selling price for this offer.</help>
+      <ismandatory>F</ismandatory>
+      <label>Price</label>
+      <searchlevel>2</searchlevel>
+      <showinlist>T</showinlist>
+      <storevalue>T</storevalue>
+    </customrecordcustomfield>
+
+    <customrecordcustomfield scriptid="custrecord_pim_ofr_fulfilment">
+      <accesslevel>2</accesslevel>
+      <description>Who ships the order: merchant (us) or channel (for example FBA). Shown as "Ships from".</description>
+      <displaytype>NORMAL</displaytype>
+      <fieldtype>TEXT</fieldtype>
+      <help>Who ships the order: merchant (us) or channel (for example FBA). Shown as "Ships from".</help>
+      <ismandatory>F</ismandatory>
+      <label>Fulfilment</label>
+      <searchlevel>2</searchlevel>
+      <showinlist>F</showinlist>
+      <storevalue>T</storevalue>
+    </customrecordcustomfield>
+
+    <customrecordcustomfield scriptid="custrecord_pim_ofr_ship_template">
+      <accesslevel>2</accesslevel>
+      <description>Name of the shipping template in the seller account.</description>
+      <displaytype>NORMAL</displaytype>
+      <fieldtype>TEXT</fieldtype>
+      <help>Name of the shipping template in the seller account.</help>
+      <ismandatory>F</ismandatory>
+      <label>Shipping Template</label>
+      <searchlevel>2</searchlevel>
+      <showinlist>F</showinlist>
+      <storevalue>T</storevalue>
+    </customrecordcustomfield>
+
+    <customrecordcustomfield scriptid="custrecord_pim_ofr_active">
+      <accesslevel>2</accesslevel>
+      <defaultchecked>F</defaultchecked>
+      <description>Tick when this offer should be on sale. Nothing is published until this is ticked.</description>
+      <displaytype>NORMAL</displaytype>
+      <fieldtype>CHECKBOX</fieldtype>
+      <help>Tick when this offer should be on sale. Nothing is published until this is ticked.</help>
+      <label>Active</label>
+      <searchlevel>2</searchlevel>
+      <showinlist>T</showinlist>
+      <storevalue>T</storevalue>
+    </customrecordcustomfield>
+
+    <!-- Listing -->
+    <customrecordcustomfield scriptid="custrecord_pim_ofr_listing_type">
+      <accesslevel>2</accesslevel>
+      <description>owned (we created the listing) or joined (we added our offer to an existing listing).</description>
+      <displaytype>NORMAL</displaytype>
+      <fieldtype>TEXT</fieldtype>
+      <help>owned (we created the listing) or joined (we added our offer to an existing listing).</help>
+      <ismandatory>F</ismandatory>
+      <label>Listing Type</label>
+      <searchlevel>2</searchlevel>
+      <showinlist>T</showinlist>
+      <storevalue>T</storevalue>
+    </customrecordcustomfield>
+
+    <customrecordcustomfield scriptid="custrecord_pim_ofr_listing_brand">
+      <accesslevel>2</accesslevel>
+      <description>The brand shown under the title on the listing. Filled in by the PIM.</description>
+      <displaytype>NORMAL</displaytype>
+      <fieldtype>TEXT</fieldtype>
+      <help>The brand shown under the title on the listing. Filled in by the PIM.</help>
+      <ismandatory>F</ismandatory>
+      <label>Brand on Listing</label>
+      <searchlevel>2</searchlevel>
+      <showinlist>F</showinlist>
+      <storevalue>T</storevalue>
+    </customrecordcustomfield>
+
+    <customrecordcustomfield scriptid="custrecord_pim_ofr_channel_id">
+      <accesslevel>2</accesslevel>
+      <description>The channel's ID for the listing (ASIN, eBay item ID, Walmart item ID). Typed in for a joined listing; written back by the PIM for an owned one.</description>
+      <displaytype>NORMAL</displaytype>
+      <fieldtype>TEXT</fieldtype>
+      <globalsearch>T</globalsearch>
+      <help>The channel's ID for the listing (ASIN, eBay item ID, Walmart item ID). Typed in for a joined listing; written back by the PIM for an owned one.</help>
+      <ismandatory>F</ismandatory>
+      <label>Channel ID</label>
+      <searchlevel>2</searchlevel>
+      <showinlist>T</showinlist>
+      <storevalue>T</storevalue>
+    </customrecordcustomfield>
+
+    <!-- Status, written back by the PIM -->
+    <customrecordcustomfield scriptid="custrecord_pim_ofr_status">
+      <accesslevel>2</accesslevel>
+      <description>Where this offer stands in the PIM. Written by the PIM.</description>
+      <displaytype>NORMAL</displaytype>
+      <fieldtype>TEXT</fieldtype>
+      <help>Where this offer stands in the PIM. Written by the PIM.</help>
+      <ismandatory>F</ismandatory>
+      <label>PIM Status</label>
+      <searchlevel>2</searchlevel>
+      <showinlist>T</showinlist>
+      <storevalue>T</storevalue>
+    </customrecordcustomfield>
+
+    <customrecordcustomfield scriptid="custrecord_pim_ofr_message">
+      <accesslevel>2</accesslevel>
+      <description>Explanation when the status is an error or a block. Written by the PIM.</description>
+      <displaytype>NORMAL</displaytype>
+      <fieldtype>TEXTAREA</fieldtype>
+      <help>Explanation when the status is an error or a block. Written by the PIM.</help>
+      <ismandatory>F</ismandatory>
+      <label>PIM Message</label>
+      <searchlevel>2</searchlevel>
+      <showinlist>F</showinlist>
+      <storevalue>T</storevalue>
+    </customrecordcustomfield>
+
+    <customrecordcustomfield scriptid="custrecord_pim_ofr_pim_url">
+      <accesslevel>2</accesslevel>
+      <description>Opens this offer in the PIM. Written by the PIM.</description>
+      <displaytype>NORMAL</displaytype>
+      <fieldtype>URL</fieldtype>
+      <help>Opens this offer in the PIM. Written by the PIM.</help>
+      <ismandatory>F</ismandatory>
+      <label>PIM Link</label>
+      <searchlevel>2</searchlevel>
+      <showinlist>F</showinlist>
+      <storevalue>T</storevalue>
+    </customrecordcustomfield>
+
+    <customrecordcustomfield scriptid="custrecord_pim_ofr_last_synced">
+      <accesslevel>2</accesslevel>
+      <description>When the PIM last read or updated this offer. Written by the PIM.</description>
+      <displaytype>NORMAL</displaytype>
+      <fieldtype>DATETIMETZ</fieldtype>
+      <help>When the PIM last read or updated this offer. Written by the PIM.</help>
+      <ismandatory>F</ismandatory>
+      <label>Last Synced</label>
+      <searchlevel>2</searchlevel>
+      <showinlist>F</showinlist>
+      <storevalue>T</storevalue>
+    </customrecordcustomfield>
+
+  </customrecordcustomfields>
+</customrecordtype>
