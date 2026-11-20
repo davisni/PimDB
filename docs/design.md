@@ -35,9 +35,55 @@ centres on where each piece of information came from and who approved it.
 | Offer | NetSuite | Our sale on a listing from one seller account: seller SKU, price, shipping template. Replaces the eCom record. |
 | Fact | PIM | One piece of information about an item, with source, confidence and approval status. |
 
-Brands: RAP (premium, faster shipping), SLP (Stevens Lake), TPA, AIC.
-"Brand" means two things: the product brand shown on a listing, and the seller
-account behind an offer. The model keeps both.
+Seller accounts today (NetSuite eCommerce Accounts): Reliable Aftermarket
+Parts, Stevens Lake, Tractor Parts Accessories, AIC, Reliable (Canada),
+Aftermarket Concrete, Aftermarket Powersports.
+
+A branded product's variant is a listing angle: an equipment make, a reference
+number, or none.
+
+### Brand, seller and shipper
+
+An Amazon product page shows three names. The design keeps them apart.
+
+| On the page | Meaning | Lives on | Owned listing | Joined listing |
+|---|---|---|---|---|
+| Brand, under the title | Who makes the product. Shared by every seller on the page | Listing (PIM) | One of our brands | Someone else's, or Generic |
+| Sold by | The seller account making this offer | Offer: seller account | RAP, SLP, ... | RAP, SLP, ... |
+| Ships from | Who sends the parcel: seller, or Amazon for FBA | Offer: fulfilment | Merchant or Amazon | Merchant or Amazon |
+
+The offer carries all three as separate fields. Seller account and fulfilment
+are choices we make. Brand on listing is filled in: from the seller account's
+brand name on an owned listing, from the page on a joined one.
+
+## The offer record (NetSuite)
+
+One new custom record, built beside the Ecom Record and deployed with SDF from
+`netsuite/`. One offer = one item on one channel from one seller account.
+
+| Group | Field | Notes |
+|---|---|---|
+| What, where | Item | Link to the inventory item |
+| | Seller account | Link to eCommerce Accounts |
+| | Channel | Amazon, eBay, Walmart, a Shopify store. Text for now |
+| | Variant | A make, a reference number, or blank. Text for now |
+| | Seller SKU | What the channel calls it |
+| Commercial | Price | Set by the pricing team |
+| | Fulfilment | Merchant or FBA |
+| | Shipping template | |
+| | Active | |
+| Listing | Listing type | Owned or Joined |
+| | Brand on listing | The brand shown under the title. Filled in, not chosen |
+| | Channel ID | Written back for owned; typed in for joined |
+| Status (from PIM) | Status, Message, PIM link, Last synced | |
+
+Unique on seller account + channel + seller SKU.
+
+Not on it: listing content, sales figures, price floor and ceiling (parked),
+quantity rules (parked), pack quantity (a set is its own item and SKU).
+
+Amazon's listings API has an offer-only mode (`LISTING_OFFER_ONLY`) for adding
+an offer to an existing ASIN, which matches the joined listing type.
 
 ## Example 1: new listings
 

@@ -89,11 +89,11 @@ pre.mermaid { margin: 0; background: var(--surface); border: 1px solid var(--lin
 <div class="wrap">
 
 <header style="display:flex;flex-direction:column;gap:14px">
-  <p class="note">Draft 2 · 19 November 2026 · for discussion</p>
+  <p class="note">Draft 3 · 20 November 2026 · for discussion</p>
   <h1>RAP PIM design</h1>
   <p class="lede">How product information would be stored, checked and sent to Amazon, Walmart, eBay and the Shopify stores once Rithum is gone. All part numbers, prices and IDs in the examples are invented to show the shape of the data.</p>
   <ul class="toc">
-    <li><a href="#picture">Big picture</a></li><li><a href="#words">Five words</a></li><li><a href="#new">Example: new listing</a></li><li><a href="#join">Example: joined listing</a></li><li><a href="#facts">How facts work</a></li><li><a href="#images">Images</a></li><li><a href="#flow">Life of an item</a></li><li><a href="#shipping">Shipping templates</a></li><li><a href="#infra">Servers</a></li><li><a href="#cutover">21 December</a></li><li><a href="#open">Open questions</a></li>
+    <li><a href="#picture">Big picture</a></li><li><a href="#words">Five words</a></li><li><a href="#offer">Offer record</a></li><li><a href="#new">Example: new listing</a></li><li><a href="#join">Example: joined listing</a></li><li><a href="#facts">How facts work</a></li><li><a href="#images">Images</a></li><li><a href="#flow">Life of an item</a></li><li><a href="#shipping">Shipping templates</a></li><li><a href="#infra">Servers</a></li><li><a href="#cutover">21 December</a></li><li><a href="#open">Open questions</a></li>
   </ul>
 </header>
 
@@ -136,11 +136,77 @@ flowchart LR
   <h2>Five words to agree on</h2>
   <div class="vocab">
     <div class="tag l-item"><div class="kind">Item <span class="sys">NetSuite</span></div><div>The physical part on the shelf. One per part, whatever name it is sold under.</div></div>
-    <div class="tag l-product"><div class="kind">Branded product <span class="sys">PIM</span></div><div>The item as sold under one of our brands for one equipment make. It has its own part number and UPC.</div></div>
+    <div class="tag l-product"><div class="kind">Branded product <span class="sys">PIM</span></div><div>The item as sold under one of our brands for one listing angle, such as an equipment make or a reference number. It has its own part number.</div></div>
     <div class="tag l-listing"><div class="kind">Listing <span class="sys">PIM</span></div><div>One page on one channel, such as an ASIN. Either <em>owned</em> (we wrote it) or <em>joined</em> (someone else's page).</div></div>
-    <div class="tag l-offer"><div class="kind">Offer <span class="sys">NetSuite</span></div><div>Our sale on a listing from one seller account: seller SKU, price, shipping template. Replaces today's eCom record.</div></div>
+    <div class="tag l-offer"><div class="kind">Offer <span class="sys">NetSuite</span></div><div>Our sale on one listing, on one channel, from one seller account: seller SKU, price, shipping template. Built beside today's Ecom Record.</div></div>
     <div class="tag" style="--c: var(--muted)"><div class="kind">Fact <span class="sys">PIM</span></div><div>One piece of information about an item, stored with its source, confidence and approval status.</div></div>
   </div>
+</section>
+
+<section id="offer">
+  <h2>The offer record</h2>
+  <p>The offer is the one new record in NetSuite. It holds the commercial decision to sell an item somewhere, and nothing about what the listing says. It has 16 fields. Today's Ecom Record has 391. Prices and IDs below are invented.</p>
+
+  <div class="box">
+    <div class="cap">Offer <small>one item, on one channel, from one seller account</small></div>
+    <div class="row">
+      <div class="tag l-offer"><div class="kind">What is sold, where</div><dl>
+        <dt>Item</dt><dd class="sku">897788M91 Latch Assembly</dd>
+        <dt>Seller account</dt><dd>Reliable Aftermarket Parts</dd>
+        <dt>Channel</dt><dd>Amazon</dd>
+        <dt>Variant</dt><dd>Massey Ferguson</dd>
+        <dt>Seller SKU</dt><dd class="sku">RAP-897788M91-MF</dd></dl></div>
+      <div class="tag l-offer"><div class="kind">Commercial terms <span class="sys">set by people</span></div><dl>
+        <dt>Price</dt><dd>24.99</dd>
+        <dt>Fulfilment</dt><dd>Merchant</dd>
+        <dt>Shipping template</dt><dd>RAP 2-day</dd>
+        <dt>Active</dt><dd>Yes</dd></dl></div>
+      <div class="tag l-offer"><div class="kind">Listing</div><dl>
+        <dt>Listing type</dt><dd>Owned</dd>
+        <dt>Brand on listing</dt><dd>Reliable Aftermarket Parts</dd>
+        <dt>Channel ID</dt><dd class="sku">B0EXAMPLE01</dd></dl></div>
+      <div class="tag l-offer"><div class="kind">Status <span class="sys">written by the PIM</span></div><dl>
+        <dt>Status</dt><dd>Live</dd>
+        <dt>Message</dt><dd>blank unless there is a problem</dd>
+        <dt>PIM link</dt><dd>opens this offer in the PIM</dd>
+        <dt>Last synced</dt><dd>20 Nov 2026 14:32</dd></dl></div>
+    </div>
+  </div>
+
+  <h3>Several offers for one item</h3>
+  <div class="scroll"><table>
+    <tr><th>Item</th><th>Seller account</th><th>Channel</th><th>Variant</th><th>Seller SKU</th><th>Price</th><th>Type</th><th>Brand on listing</th><th>Channel ID</th><th>Status</th></tr>
+    <tr><td class="sku">897788M91</td><td>RAP</td><td>Amazon</td><td>Massey Ferguson</td><td class="sku">RAP-897788M91-MF</td><td class="num">24.99</td><td>Owned</td><td>Reliable Aftermarket Parts</td><td class="sku">B0EXAMPLE01</td><td class="status s-ok">Live</td></tr>
+    <tr><td class="sku">897788M91</td><td>RAP</td><td>Amazon</td><td>Massey Harris</td><td class="sku">RAP-897788M91-MH</td><td class="num">24.99</td><td>Owned</td><td>Reliable Aftermarket Parts</td><td class="sku">B0EXAMPLE02</td><td class="status s-ok">Live</td></tr>
+    <tr><td class="sku">897788M91</td><td>RAP</td><td>eBay</td><td>none</td><td class="sku">RAP-897788M91</td><td class="num">22.99</td><td>Owned</td><td>Reliable Aftermarket Parts</td><td class="sku">326000000001</td><td class="status s-ok">Live</td></tr>
+    <tr><td class="sku">897788M91</td><td>Stevens Lake</td><td>Amazon</td><td>Massey Ferguson</td><td class="sku">SLP-897788M91-MF</td><td class="num">21.99</td><td>Owned</td><td>Stevens Lake Parts</td><td>not yet</td><td class="status s-warn">Waiting for content</td></tr>
+    <tr><td class="sku">897788M91</td><td>RAP</td><td>Amazon</td><td>none</td><td class="sku">RAP-J-897788M91</td><td class="num">26.99</td><td>Joined</td><td>Generic</td><td class="sku">B0EXAMPLE09</td><td class="status s-bad">Blocked: pack quantity</td></tr>
+  </table></div>
+  <ul>
+    <li>Rows 1 and 2 are the same part split by make, for ad targeting.</li>
+    <li>Row 3 has no variant: one general eBay listing.</li>
+    <li>Row 4 is new. The PIM has not finished its content, so there is no channel ID yet.</li>
+    <li>Row 5 joins someone else's ASIN. A person types the ASIN in, the brand comes from that page, and the PIM's match check has blocked it.</li>
+  </ul>
+  <p>No two offers may share the same seller account, channel and seller SKU. That rule lets an incoming order line find exactly one offer, and so one item.</p>
+
+  <h3>Brand, seller and shipper are three different things</h3>
+  <p>An Amazon product page shows three names. The offer record carries all three as separate fields.</p>
+  <div class="scroll"><table>
+    <tr><th>On the Amazon page</th><th>What it means</th><th>Field on the offer</th><th>Owned listing</th><th>Joined listing</th></tr>
+    <tr><td>Brand, under the title</td><td>Who makes the product. It belongs to the page, and every seller on the page shares it.</td><td>Brand on listing</td><td>One of our brands</td><td>Someone else's brand, or Generic</td></tr>
+    <tr><td>Sold by, under the buy button</td><td>The seller account making this offer</td><td>Seller account</td><td>RAP or Stevens Lake</td><td>RAP or Stevens Lake</td></tr>
+    <tr><td>Ships from, under the buy button</td><td>Who sends the parcel: the seller, or Amazon for FBA</td><td>Fulfilment</td><td>Merchant or Amazon</td><td>Merchant or Amazon</td></tr>
+  </table></div>
+  <p>Seller account and fulfilment are choices we make. Brand on listing is filled in for us: from the seller account's brand name on an owned listing, and from the page itself on a joined one.</p>
+
+  <h3>Left off on purpose</h3>
+  <ul>
+    <li>Titles, bullets, descriptions, images and fitment. They live in the PIM.</li>
+    <li>Sales figures. They belong in reporting.</li>
+    <li>Price floor and ceiling, and stock quantity rules. Parked for a later discussion.</li>
+    <li>Pack quantity. A set of three is sold as its own item with its own SKU.</li>
+  </ul>
 </section>
 
 <section id="new">
@@ -432,6 +498,8 @@ flowchart LR
     <tr><td>What does Blueprint return today: structured values with source links, or free text?</td><td>Decides how much of it can be reused as the first agent.</td></tr>
     <tr><td>What happens to low-revenue listings that never get reviewed?</td><td>About 870,000 listings will not all get human attention.</td></tr>
     <tr><td>Do brands share the same photos of a part, or does each brand need its own?</td><td>Decides whether images attach to the item or to the branded product in most cases.</td></tr>
+    <tr><td>Do price floor and ceiling belong on the offer?</td><td>Parked. Needed if a repricer keeps adjusting prices.</td></tr>
+    <tr><td>Where do stock quantity rules live?</td><td>Parked. Something must say how much stock each offer may show.</td></tr>
     <tr><td>Which product categories to use for the channel field research?</td><td>Required fields differ by category. Still to do.</td></tr>
   </table></div>
 </section>

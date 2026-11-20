@@ -15,6 +15,11 @@
 | 11 | How do new listings and content edits happen between 21 December and the PIM being ready? | No content pipeline after Rithum | | |
 | 12 | Is there a fallback if the Versori cutover is not clean on 21 December? | Hard cut, four days before Christmas | | |
 | 13 | How do Fulfilled by Amazon (FBA) and Fulfilled by Merchant (FBM) fit the model? | Likely a separate offer on the same listing, with its own seller SKU, its own stock held at Amazon and no shipping template. To be talked through. | | |
+| 14 | Do price floor and ceiling belong on the offer? | Parked. Needed if a repricer keeps adjusting prices | | |
+| 15 | Where do stock quantity rules live? | Parked. Something must say how much stock each offer may show | | |
+| 16 | Are Reliable (Canada), Aftermarket Concrete and Aftermarket Powersports in scope? | Seven seller accounts exist, not four | | |
+| 17 | How is the existing "Listing Issue" dropdown on the Ecom Record used today? | An early version of the issue flag already exists | | |
+| 18 | Is the Cloudflare image pipeline newer than the sandbox data? | Every image link seen points to Amazon S3 | | |
 
 ## Answered
 

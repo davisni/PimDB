@@ -17,3 +17,12 @@ Decisions reached in discussion. Add new ones at the bottom with a date.
 | 2026-11-19 | Code, server setup and agent definitions go in Azure DevOps; secrets in 1Password | Existing company tools |
 | 2026-11-19 | Images stay on Cloudflare; the PIM records address, role, order, source and approval | Smallest change to the current pipeline |
 | 2026-11-20 | Build a small local prototype (a handful of sandbox items) to make the design tangible | See data move before committing to the schema |
+| 2026-11-20 | Prototype runs in Docker on the work MacBook; code in a private personal GitHub repo until Azure DevOps is set up | Quick start; company data stays out of Git |
+| 2026-11-20 | New NetSuite offer record is built beside the Ecom Record, not by changing it | The Versori cutover depends on the Ecom Record |
+| 2026-11-20 | NetSuite customisations are defined as code with SDF in `netsuite/` and deployed to the sandbox | The offer record will change often; same files go to production later |
+| 2026-11-20 | Imported definitions of existing records are kept in `netsuite/reference/`, outside the deploy path | Reference only; must never be redeployed |
+| 2026-11-20 | Offer fields: item and seller account are links; other fields start as free text | Links prevent orphans; reference lists come later |
+| 2026-11-20 | The offer carries three separate fields matching the Amazon page: brand on listing, seller account (sold by), fulfilment (ships from) | On a joined listing the page's brand is someone else's; showing all three makes the difference obvious |
+| 2026-11-20 | Price floor/ceiling and quantity rules are left off the offer for now | To be discussed later |
+| 2026-11-20 | Pack quantity is not an offer field. A set is sold as its own item and SKU | Keeps the offer simple |
+| 2026-11-20 | Demo data: a cleaned-up version of item 897788M91, with the real 55 Ecom Records as the "before" | Shows current mess and target state for the same part |
