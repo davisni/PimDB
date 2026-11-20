@@ -1,0 +1,16 @@
+# secrets and local settings
+.env
+.env.*
+secrets/
+.claude/
+
+# data pulled from NetSuite or sales channels stays off GitHub
+data/
+*.csv
+*.xlsx
+
+# local database and system files
+pgdata/
+.DS_Store
+__pycache__/
+.venv/

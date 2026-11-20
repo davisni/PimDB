@@ -1,0 +1,439 @@
+<title>RAP PIM Design</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: one reading column, parts-tag cards colour-coded by data layer, diagrams full width */
+:root {
+  --bg: #F2F4F6; --surface: #FFFFFF; --ink: #16202A; --muted: #55626F; --line: #D3DAE0;
+  --item: #2F5D8C; --product: #7A4FA3; --listing: #0E7C6B; --offer: #A85A0A;
+  --ok: #1E7F4F; --warn: #9A5C00; --bad: #B3372F;
+  --display: "Barlow Condensed", "Arial Narrow", Arial, sans-serif;
+  --body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #11171D; --surface: #1A222B; --ink: #E6EBF0; --muted: #9AA7B4; --line: #2F3B47;
+  --item: #7FB0E0; --product: #BFA0E6; --listing: #5CCBB6; --offer: #F0A857;
+  --ok: #6FD39C; --warn: #F0B45C; --bad: #F08A80; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #11171D; --surface: #1A222B; --ink: #E6EBF0; --muted: #9AA7B4; --line: #2F3B47;
+  --item: #7FB0E0; --product: #BFA0E6; --listing: #5CCBB6; --offer: #F0A857;
+  --ok: #6FD39C; --warn: #F0B45C; --bad: #F08A80; color-scheme: dark }
+
+body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 16px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 32px 64px; }
+.wrap { max-width: 1000px; margin: 0 auto; display: flex; flex-direction: column; gap: 56px; }
+section { display: flex; flex-direction: column; gap: 18px; min-width: 0; }
+h1, h2, h3 { font-family: var(--display); text-wrap: balance; margin: 0; line-height: 1.1; }
+h1 { font-size: 3rem; font-weight: 700; letter-spacing: .01em; text-transform: uppercase; }
+h2 { font-size: 2rem; font-weight: 600; text-transform: uppercase; letter-spacing: .02em; padding-bottom: 8px; border-bottom: 2px solid var(--ink); }
+h3 { font-size: 1.35rem; font-weight: 600; letter-spacing: .01em; }
+p, ul, ol { margin: 0; max-width: 68ch; }
+ul, ol { padding-left: 1.2em; display: flex; flex-direction: column; gap: 6px; }
+.lede { font-size: 1.15rem; color: var(--muted); }
+.note { color: var(--muted); font-size: .9rem; }
+code, .sku { font-family: var(--mono); font-size: .88em; }
+a { color: var(--listing); }
+a:focus-visible { outline: 2px solid var(--listing); outline-offset: 2px; }
+
+.toc { display: flex; flex-wrap: wrap; gap: 8px 20px; padding: 0; list-style: none; max-width: none; font-family: var(--display); font-size: 1.1rem; text-transform: uppercase; letter-spacing: .04em; }
+
+.scroll { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: .92rem; background: var(--surface); }
+th, td { text-align: left; vertical-align: top; padding: 9px 12px; border: 1px solid var(--line); }
+th { font-family: var(--display); font-size: 1rem; text-transform: uppercase; letter-spacing: .05em; font-weight: 600; color: var(--muted); }
+td.num { font-variant-numeric: tabular-nums; }
+
+/* layer colours */
+.l-item { --c: var(--item); } .l-product { --c: var(--product); } .l-listing { --c: var(--listing); } .l-offer { --c: var(--offer); }
+.tag { background: color-mix(in srgb, var(--c) 13%, var(--surface)); border: 1px solid var(--c); border-radius: 2px; padding: 10px 12px; display: flex; flex-direction: column; gap: 4px; min-width: 0; font-size: .88rem; }
+.tag .kind { font-family: var(--display); font-weight: 600; font-size: .95rem; text-transform: uppercase; letter-spacing: .07em; color: var(--c); display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.tag .name { font-family: var(--mono); font-weight: 500; overflow-wrap: anywhere; }
+.tag .sys { color: var(--muted); font-family: var(--body); text-transform: none; letter-spacing: 0; font-weight: 400; font-size: .8rem; }
+.tag dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 2px 10px; }
+.tag dt { color: var(--muted); } .tag dd { margin: 0; overflow-wrap: anywhere; }
+
+.vocab { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; }
+.fan { display: flex; flex-direction: column; gap: 10px; }
+.fan .cols { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+.fan .col { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.fan .pair { display: flex; flex-direction: column; gap: 4px; padding-left: 10px; border-left: 2px dotted var(--line); }
+.down { font-family: var(--display); text-transform: uppercase; letter-spacing: .08em; color: var(--muted); font-size: .95rem; text-align: center; }
+@media (max-width: 860px) { .fan .cols { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 480px) { .fan .cols { grid-template-columns: 1fr; } h1 { font-size: 2.3rem; } }
+
+.status { font-weight: 600; white-space: nowrap; }
+.s-ok { color: var(--ok); } .s-warn { color: var(--warn); } .s-bad { color: var(--bad); }
+
+.steps { list-style: none; padding: 0; max-width: none; counter-reset: s; gap: 0; border-top: 1px solid var(--line); }
+.steps li { counter-increment: s; display: grid; grid-template-columns: 2.4rem 9.5rem 1fr; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--line); align-items: baseline; }
+.steps li::before { content: counter(s); font-family: var(--display); font-size: 1.6rem; font-weight: 700; color: var(--muted); }
+.steps .where { font-family: var(--display); text-transform: uppercase; letter-spacing: .06em; font-weight: 600; }
+.steps .what { min-width: 0; }
+@media (max-width: 600px) { .steps li { grid-template-columns: 2rem 1fr; } .steps .what { grid-column: 2; } }
+
+/* infrastructure nesting */
+.infra { display: flex; flex-direction: column; gap: 10px; }
+.box { border: 1.5px solid var(--line); background: var(--surface); border-radius: 2px; padding: 12px; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.box > .cap { font-family: var(--display); text-transform: uppercase; letter-spacing: .07em; font-weight: 600; font-size: 1rem; }
+.box > .cap small { font-family: var(--body); text-transform: none; letter-spacing: 0; font-weight: 400; color: var(--muted); font-size: .82rem; display: block; }
+.box.outer { border-style: dashed; background: transparent; }
+.box.door { border-color: var(--listing); }
+.box.vault { border-color: var(--item); }
+.row { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 10px; }
+.callout { border: 1.5px solid var(--warn); background: color-mix(in srgb, var(--warn) 9%, var(--surface)); padding: 14px 16px; border-radius: 2px; display: flex; flex-direction: column; gap: 8px; }
+.callout strong { font-family: var(--display); text-transform: uppercase; letter-spacing: .06em; font-size: 1.05rem; }
+pre.mermaid { margin: 0; background: var(--surface); border: 1px solid var(--line); padding: 12px; min-width: 720px; }
+</style>
+
+<div class="wrap">
+
+<header style="display:flex;flex-direction:column;gap:14px">
+  <p class="note">Draft 2 · 19 November 2026 · for discussion</p>
+  <h1>RAP PIM design</h1>
+  <p class="lede">How product information would be stored, checked and sent to Amazon, Walmart, eBay and the Shopify stores once Rithum is gone. All part numbers, prices and IDs in the examples are invented to show the shape of the data.</p>
+  <ul class="toc">
+    <li><a href="#picture">Big picture</a></li><li><a href="#words">Five words</a></li><li><a href="#new">Example: new listing</a></li><li><a href="#join">Example: joined listing</a></li><li><a href="#facts">How facts work</a></li><li><a href="#images">Images</a></li><li><a href="#flow">Life of an item</a></li><li><a href="#shipping">Shipping templates</a></li><li><a href="#infra">Servers</a></li><li><a href="#cutover">21 December</a></li><li><a href="#open">Open questions</a></li>
+  </ul>
+</header>
+
+<section id="picture">
+  <h2>The big picture</h2>
+  <p>NetSuite keeps the physical part, the stock and the commercial decision to sell it somewhere at a price. The PIM keeps everything a listing says and the evidence behind it. The transport only carries finished messages between them and the channels.</p>
+  <div class="scroll"><pre class="mermaid">
+flowchart LR
+  subgraph IN[Where information comes from]
+    V[Vendor files and APIs]
+    A[AI agents]
+    P[RAP staff]
+  end
+  NS[(NetSuite<br/>items, stock, offers, price)]
+  PIM[(PIM<br/>facts, branded products,<br/>listings, channel rules)]
+  T[Transport<br/>Versori today]
+  CH[Amazon, Walmart, eBay,<br/>Shopify stores]
+  V -->|raw data| PIM
+  A -->|proposals with sources| PIM
+  P -->|review and edits| PIM
+  NS -->|items and offers| PIM
+  PIM -->|status and link| NS
+  PIM -->|finished listing content| T
+  NS -->|stock and price| T
+  T -->|orders| NS
+  T -->|channel IDs and errors| PIM
+  T <--> CH
+  </pre></div>
+  <p class="note">The NetSuite and PIM arrows also travel through the transport. They are drawn direct to keep the picture readable.</p>
+  <div class="scroll"><table>
+    <tr><th>System</th><th>Owns</th><th>Does not own</th></tr>
+    <tr><td><strong>NetSuite</strong></td><td>Items, stock, cost, offers, price, orders, issue flags from customer service</td><td>Titles, descriptions, fitment, images</td></tr>
+    <tr><td><strong>PIM</strong></td><td>Facts with sources, branded products, listings, channel rules, review queues, publish status</td><td>Stock, orders, money</td></tr>
+    <tr><td><strong>Transport</strong></td><td>Delivery, retries, logins to each channel</td><td>Any business rule. It maps nothing and decides nothing.</td></tr>
+  </table></div>
+  <p>Because the transport holds no rules, Versori can later be replaced by our own scripts without touching the PIM. Orders and stock never pass through the PIM, so if the PIM is down, selling continues.</p>
+</section>
+
+<section id="words">
+  <h2>Five words to agree on</h2>
+  <div class="vocab">
+    <div class="tag l-item"><div class="kind">Item <span class="sys">NetSuite</span></div><div>The physical part on the shelf. One per part, whatever name it is sold under.</div></div>
+    <div class="tag l-product"><div class="kind">Branded product <span class="sys">PIM</span></div><div>The item as sold under one of our brands for one equipment make. It has its own part number and UPC.</div></div>
+    <div class="tag l-listing"><div class="kind">Listing <span class="sys">PIM</span></div><div>One page on one channel, such as an ASIN. Either <em>owned</em> (we wrote it) or <em>joined</em> (someone else's page).</div></div>
+    <div class="tag l-offer"><div class="kind">Offer <span class="sys">NetSuite</span></div><div>Our sale on a listing from one seller account: seller SKU, price, shipping template. Replaces today's eCom record.</div></div>
+    <div class="tag" style="--c: var(--muted)"><div class="kind">Fact <span class="sys">PIM</span></div><div>One piece of information about an item, stored with its source, confidence and approval status.</div></div>
+  </div>
+</section>
+
+<section id="new">
+  <h2>Example 1: a new listing</h2>
+  <p>We buy a mower blade from a vendor in India. It replaces a Kubota blade and a New Holland blade. We want it on Amazon and Walmart, under RAP and Stevens Lake, with a separate listing for each make so advertising can target each one.</p>
+  <p>That is 2 brands × 2 makes × 2 channels: <strong>1 item, 4 branded products, 8 listings and 8 offers.</strong></p>
+
+  <div class="fan">
+    <div class="tag l-item">
+      <div class="kind">Item <span class="sys">NetSuite</span></div>
+      <div class="name">MB-2054</div>
+      <div>Mower blade, 20.5 in, 5/8 in centre hole · 1,200 in stock · all 8 offers sell from this one pool</div>
+    </div>
+    <div class="down">▼ becomes 4 branded products, each on 2 channels ▼</div>
+    <div class="cols">
+      <div class="col">
+        <div class="tag l-product"><div class="kind">Branded product</div><div class="name">RAP-MB2054-KUB</div><div>RAP · fits Kubota</div></div>
+        <div class="pair">
+          <div class="tag l-listing"><div class="kind">Listing · Amazon</div><div>Owned · ASIN comes back from Amazon</div></div>
+          <div class="tag l-offer"><div class="kind">Offer</div><div>RAP account · $34.99 · 2-day template</div></div>
+        </div>
+        <div class="pair">
+          <div class="tag l-listing"><div class="kind">Listing · Walmart</div><div>Owned · item ID comes back</div></div>
+          <div class="tag l-offer"><div class="kind">Offer</div><div>RAP account · $34.99 · 2-day template</div></div>
+        </div>
+      </div>
+      <div class="col">
+        <div class="tag l-product"><div class="kind">Branded product</div><div class="name">RAP-MB2054-NH</div><div>RAP · fits New Holland</div></div>
+        <div class="pair">
+          <div class="tag l-listing"><div class="kind">Listing · Amazon</div><div>Owned</div></div>
+          <div class="tag l-offer"><div class="kind">Offer</div><div>RAP account · $34.99 · 2-day template</div></div>
+        </div>
+        <div class="pair">
+          <div class="tag l-listing"><div class="kind">Listing · Walmart</div><div>Owned</div></div>
+          <div class="tag l-offer"><div class="kind">Offer</div><div>RAP account · $34.99 · 2-day template</div></div>
+        </div>
+      </div>
+      <div class="col">
+        <div class="tag l-product"><div class="kind">Branded product</div><div class="name">SLP-MB2054-KUB</div><div>Stevens Lake · fits Kubota</div></div>
+        <div class="pair">
+          <div class="tag l-listing"><div class="kind">Listing · Amazon</div><div>Owned</div></div>
+          <div class="tag l-offer"><div class="kind">Offer</div><div>SLP account · $29.99 · standard template</div></div>
+        </div>
+        <div class="pair">
+          <div class="tag l-listing"><div class="kind">Listing · Walmart</div><div>Owned</div></div>
+          <div class="tag l-offer"><div class="kind">Offer</div><div>SLP account · $29.99 · standard template</div></div>
+        </div>
+      </div>
+      <div class="col">
+        <div class="tag l-product"><div class="kind">Branded product</div><div class="name">SLP-MB2054-NH</div><div>Stevens Lake · fits New Holland</div></div>
+        <div class="pair">
+          <div class="tag l-listing"><div class="kind">Listing · Amazon</div><div>Owned</div></div>
+          <div class="tag l-offer"><div class="kind">Offer</div><div>SLP account · $29.99 · standard template</div></div>
+        </div>
+        <div class="pair">
+          <div class="tag l-listing"><div class="kind">Listing · Walmart</div><div>Owned</div></div>
+          <div class="tag l-offer"><div class="kind">Offer</div><div>SLP account · $29.99 · standard template</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <h3>What the PIM knows about the item</h3>
+  <p>Facts are stored once, against the item. All four branded products and all eight listings draw from the same facts, so a correction is made in one place.</p>
+  <div class="scroll"><table>
+    <tr><th>Fact</th><th>Value</th><th>Where it came from</th><th>Status</th></tr>
+    <tr><td>Length</td><td>20.5 in</td><td>Vendor spec sheet (PDF, page 3)</td><td class="status s-ok">Approved by rule</td></tr>
+    <tr><td>Centre hole</td><td>5/8 in</td><td>Vendor spec sheet (PDF, page 3)</td><td class="status s-ok">Approved by rule</td></tr>
+    <tr><td>Replaces Kubota part</td><td class="sku">K0000-11111</td><td>Vendor cross-reference, confirmed by two independent sources found by an agent</td><td class="status s-ok">Approved by reviewer</td></tr>
+    <tr><td>Replaces New Holland part</td><td class="sku">NH-0002222</td><td>Vendor cross-reference only, nothing found to confirm it</td><td class="status s-warn">Waiting for review</td></tr>
+    <tr><td>Fits Kubota decks</td><td>3 deck models</td><td>Agent research, 3 sources linked, agent version 1.4</td><td class="status s-warn">Waiting for fitment approver</td></tr>
+    <tr><td>Fits New Holland decks</td><td>none yet</td><td>Blocked until the New Holland part number is confirmed</td><td class="status s-bad">Blocked</td></tr>
+  </table></div>
+  <p>In this state the two Kubota products are close to publishable and the two New Holland products are not. The PIM holds those four New Holland listings back on its own.</p>
+
+  <h3>How one fact set becomes different listings</h3>
+  <div class="scroll"><table>
+    <tr><th></th><th>RAP · Kubota · Amazon</th><th>SLP · New Holland · Walmart</th></tr>
+    <tr><td>Title</td><td>RAP mower blade, 20.5 in, fits Kubota 60 in decks, replaces K0000-11111</td><td>Stevens Lake mower blade, 20.5 in, fits New Holland 60 in decks, replaces NH-0002222</td></tr>
+    <tr><td>Fitment shown</td><td>Kubota models only</td><td>New Holland models only</td></tr>
+    <tr><td>Brand wording</td><td>RAP warranty, RAP phone number</td><td>Stevens Lake warranty, Stevens Lake phone number</td></tr>
+    <tr><td>Shape of the data</td><td>Amazon's fields and limits for this category</td><td>Walmart's fields and limits for this category</td></tr>
+    <tr><td>Seller SKU</td><td class="sku">RAP-MB2054-KUB</td><td class="sku">SLP-MB2054-NH</td></tr>
+  </table></div>
+  <p>The seller SKU is the branded product's part number. When an order arrives with <code>RAP-MB2054-KUB</code> on it, the offer record says that means one <code>MB-2054</code> from the shelf.</p>
+
+  <div class="callout">
+    <strong>Two things someone must decide</strong>
+    <p>Each of the four branded products needs its own part number and UPC, or an exemption, before a marketplace will accept it as a separate product.</p>
+    <p>RAP/Kubota and RAP/New Holland are physically the same blade under the same brand. Marketplaces have rules against duplicate listings of one product. Whoever owns account health should approve the split-by-make approach before it is used widely.</p>
+  </div>
+
+  <h3>Item kits as aliases</h3>
+  <p>Today a NetSuite kit containing one of an item is sometimes used as an alias. In this design the offer record does that job, because it already says which item a seller SKU means. Kits stay useful for what they were made for: a real bundle, such as a set of three blades sold as one unit. This is a recommendation and still an open question.</p>
+</section>
+
+<section id="join">
+  <h2>Example 2: joining someone else's listing</h2>
+  <p>The same blade already has a page on Amazon that another seller created. We add our offer to that page. We cannot change its title, bullets, images or brand, so there is no branded product and nothing for the PIM to write.</p>
+
+  <div class="fan">
+    <div class="tag l-item"><div class="kind">Item <span class="sys">NetSuite</span></div><div class="name">MB-2054</div><div>The same blade as Example 1</div></div>
+    <div class="down">▼ matched to 1 existing page ▼</div>
+    <div class="tag l-listing"><div class="kind">Listing · Amazon · joined <span class="sys">PIM</span></div><div class="name">ASIN B0EXAMPLE1</div><div>Brand on page: Generic · Title on page: "20-1/2 in mower blade set of 3 for Kubota and John Deere 60 in deck" · Content copied in as a snapshot, re-checked on a schedule</div></div>
+    <div class="down">▼ one offer per seller account ▼</div>
+    <div class="row">
+      <div class="tag l-offer"><div class="kind">Offer <span class="sys">NetSuite</span></div><div class="name">RAP-J-MB2054</div><div>RAP account · $36.99 · 2-day template</div></div>
+      <div class="tag l-offer"><div class="kind">Offer <span class="sys">NetSuite</span></div><div class="name">SLP-J-MB2054</div><div>SLP account · $31.99 · standard template</div></div>
+    </div>
+  </div>
+
+  <h3>The match check</h3>
+  <p>Before the offer goes live, the PIM compares what the page claims with what we know about our item. If the page promises something our part does not deliver, the return comes to us.</p>
+  <div class="scroll"><table>
+    <tr><th>Page claims</th><th>Our approved facts</th><th>Result</th></tr>
+    <tr><td>Length 20-1/2 in</td><td>20.5 in</td><td class="status s-ok">Match</td></tr>
+    <tr><td>Centre hole 5/8 in</td><td>5/8 in</td><td class="status s-ok">Match</td></tr>
+    <tr><td>Fits Kubota 60 in deck</td><td>Fits 3 Kubota deck models (approved)</td><td class="status s-ok">Match</td></tr>
+    <tr><td>Fits John Deere</td><td>No John Deere fitment on file</td><td class="status s-warn">Needs review</td></tr>
+    <tr><td>Set of 3</td><td>Our item is 1 blade</td><td class="status s-bad">Blocked</td></tr>
+  </table></div>
+  <p>Here the check stops the offer. To join this page we would have to sell a kit of three blades, and someone would have to confirm or reject the John Deere claim.</p>
+
+  <div class="callout">
+    <strong>Risks specific to joined listings</strong>
+    <p>Adding an offer says we are selling exactly the product on the page, including its brand. Joining a generic page is routine. Joining a page under another company's registered brand with a different-branded part invites counterfeit complaints, so those need an approval step.</p>
+    <p>Two of our own seller accounts offering on the same page should be checked against Amazon's multiple-account rules before we rely on it.</p>
+  </div>
+</section>
+
+<section id="facts">
+  <h2>How a fact is stored, reused and changed</h2>
+  <p>A listing does not hold its own copy of the information. It is assembled from the item's approved facts each time it is built. That is why one correction reaches every listing that depends on it.</p>
+
+  <h3>One fact, many listings</h3>
+  <p>Using the mower blade from Example 1 and its 8 listings:</p>
+  <div class="scroll"><table>
+    <tr><th>Fact</th><th>Stored against</th><th>Appears in</th><th>On which listings</th></tr>
+    <tr><td>Length: 20.5 in</td><td>Item</td><td>Title, length field</td><td>All 8</td></tr>
+    <tr><td>Replaces Kubota part <span class="sku">K0000-11111</span></td><td>Item, tagged Kubota</td><td>Title, a bullet, part-number field</td><td>The 4 Kubota listings</td></tr>
+    <tr><td>Fits Kubota decks</td><td>Item, tagged Kubota</td><td>Fitment field, a bullet</td><td>The 4 Kubota listings</td></tr>
+    <tr><td>Fits New Holland decks</td><td>Item, tagged New Holland</td><td>Fitment field, a bullet</td><td>The 4 New Holland listings</td></tr>
+    <tr><td>Warranty wording</td><td>Brand (RAP), not the item</td><td>A bullet, description</td><td>The 4 RAP listings, and every other RAP listing</td></tr>
+  </table></div>
+  <p>The make tag is what lets a Kubota listing pick up only the Kubota fitment from an item that fits two makes.</p>
+
+  <h3>The history of one fact</h3>
+  <p>A fact is never edited in place. A change creates a new version and the old one is kept. Here is "Fits Kubota decks" over four months. Deck model names are invented.</p>
+  <div class="scroll"><table>
+    <tr><th>Version</th><th>Date</th><th>Value</th><th>Where it came from</th><th>Decision</th><th>Status</th></tr>
+    <tr><td class="num">1</td><td class="num">3 Mar 2027</td><td>KD-60A, KD-60B, KD-60C</td><td>Agent research, version 1.4, three sources linked</td><td>Approved by fitment reviewer, 4 Mar</td><td class="status">Replaced by version 2</td></tr>
+    <tr><td></td><td class="num">22 Jun 2027</td><td colspan="3">Customer service adds an issue record to the RAP Amazon offer: "Customer says it does not fit a KD-60C." The issue is linked to version 1, which was live when the order was placed.</td><td class="status s-warn">Under review</td></tr>
+    <tr><td class="num">2</td><td class="num">24 Jun 2027</td><td>KD-60A, KD-60B</td><td>Reviewer checked the manufacturer's parts diagram. KD-60C uses a longer blade.</td><td>Approved by fitment reviewer, 24 Jun</td><td class="status s-ok">Current</td></tr>
+  </table></div>
+
+  <h3>What happens when version 2 is approved</h3>
+  <ol>
+    <li>The PIM finds every listing that uses this fact: the 4 Kubota listings.</li>
+    <li>It rebuilds those 4 and checks them against each channel's rules.</li>
+    <li>The transport sends the 4 updates. The 4 New Holland listings are untouched.</li>
+    <li>The PIM saves a snapshot of exactly what was sent and which fact versions it was built from.</li>
+  </ol>
+  <p>Those snapshots answer two questions later: what did this listing say on the day of that order, and which listings ever used a fact we now know was wrong.</p>
+
+  <h3>The tables behind this</h3>
+  <div class="row">
+    <div class="box"><div class="cap">Fact <small>One row per version. Item, what it describes, make tag, value, source, confidence, who approved it, current or replaced.</small></div></div>
+    <div class="box"><div class="cap">Source <small>The evidence for a fact: a vendor file and page, a web address with the quoted passage, or a person's note.</small></div></div>
+    <div class="box"><div class="cap">Listing <small>Channel, account, branded product, owned or joined, publish status, channel ID.</small></div></div>
+    <div class="box"><div class="cap">Listing snapshot <small>What was sent, when, and the fact versions used to build it.</small></div></div>
+  </div>
+  <p class="note">This is the shape, not the final database design. That comes next.</p>
+</section>
+
+<section id="images">
+  <h2>Images</h2>
+  <p>Today pictures go into a OneDrive folder named with the item's NetSuite internal ID. A pipeline converts and resizes them, hosts them on Cloudflare and writes the web addresses back to NetSuite. Most of that can stay. What changes is where the addresses are recorded and how much is known about each picture.</p>
+  <div class="scroll"><pre class="mermaid">
+flowchart LR
+  F[OneDrive folder<br/>named by item ID] --> P[Image pipeline<br/>convert and resize]
+  P --> C[Cloudflare<br/>hosts the files]
+  C -->|web address| R[PIM image record<br/>role, order, source, approval]
+  R --> L[Listing picks images<br/>to suit the channel]
+  L --> T[Transport] --> CH[Channel]
+  </pre></div>
+  <ul>
+    <li><strong>The files stay on Cloudflare.</strong> The PIM stores the web address and information about the picture, not the picture itself.</li>
+    <li><strong>An image is treated like a fact.</strong> Each has a record: which item, its role (main photo, angle, dimension drawing, in use), its order, where it came from, and whether it is approved.</li>
+    <li><strong>Images belong to the item by default.</strong> A picture can instead be attached to a branded product when it shows brand packaging or a brand label.</li>
+    <li><strong>Each listing chooses from the approved set.</strong> Channel rules decide how many, in what order and what the main image must look like. These are checks in the PIM, the same as text rules.</li>
+    <li><strong>Joined listings use the page's own images.</strong> We supply none.</li>
+  </ul>
+  <div class="callout">
+    <strong>Why the source of a picture matters</strong>
+    <p>A picture copied from another seller's or a manufacturer's website may belong to someone else, and may show a manufacturer's logo. Recording where each picture came from lets a reviewer catch those before they are published.</p>
+  </div>
+  <p>The smallest change to today's process is to have the pipeline's last step write to the PIM as well as NetSuite. Uploading through a PIM screen can replace the OneDrive folder later.</p>
+</section>
+
+<section id="flow">
+  <h2>The life of a new item</h2>
+  <ol class="steps">
+    <li><span class="where">NetSuite</span><span class="what">A bare item is created. It syncs to the PIM straight away so research can start.</span></li>
+    <li><span class="where">NetSuite</span><span class="what">Offers are created in bulk by rule or spreadsheet: which brands, channels and makes. Pricing is queued for the pricing team and runs in parallel.</span></li>
+    <li><span class="where">PIM</span><span class="what">Vendor data is loaded exactly as received and turned into facts labelled with the vendor and date. The item is scored for how researchable it is.</span></li>
+    <li><span class="where">PIM · agents</span><span class="what">Agents first confirm the part's identity, then propose missing facts with sources. Agents never write live data.</span></li>
+    <li><span class="where">PIM · people</span><span class="what">Low-risk facts are approved by rule. Fitment and specs go to a reviewer.</span></li>
+    <li><span class="where">PIM</span><span class="what">Each listing is built from approved facts and checked against that channel's rules. Gaps go back to the work queue.</span></li>
+    <li><span class="where">Transport</span><span class="what">When content is approved, the price is set and the offer is active, the finished listing is delivered to the channel.</span></li>
+    <li><span class="where">Channel</span><span class="what">The channel accepts or rejects it. Its ID or its error message is written back to the PIM, and the status shows on the offer in NetSuite with a link to the PIM page.</span></li>
+    <li><span class="where">NetSuite</span><span class="what">If a customer later reports a problem, customer service adds an issue record to the offer. It lands in the PIM review queue next to the facts that were live at the time.</span></li>
+  </ol>
+</section>
+
+<section id="shipping">
+  <h2>Shipping templates</h2>
+  <p>A shipping template is a named set of delivery rules that lives inside a seller account: which regions we ship to, how fast, and what the customer pays. Each offer is assigned one template. Amazon and Walmart both call them shipping templates. eBay has shipping policies and Shopify has shipping profiles, which do the same job.</p>
+  <p>This is how "RAP ships faster than Stevens Lake" becomes real. The RAP account has a 2-day template, the SLP account has a slower one, and each offer points to the right one. The delivery promise shown to the customer comes from the template, and so do late-shipment penalties if we miss it.</p>
+  <ul>
+    <li>The template name belongs on the offer record, next to price.</li>
+    <li>The templates themselves are set up once per seller account, by hand, in each seller portal.</li>
+    <li>An offer naming a template that does not exist in that account will be rejected, so the PIM should keep a list of valid template names per account and check against it.</li>
+  </ul>
+</section>
+
+<section id="infra">
+  <h2>The servers, in plain terms</h2>
+  <p>A VPS is a rented slice of a computer in a data centre. Everything is reached through one front door. Nothing behind the door can be reached from the internet directly.</p>
+  <div class="infra">
+    <div class="box outer">
+      <div class="cap">The internet <small>RAP staff in a browser · Versori · channel notifications</small></div>
+      <div class="box outer">
+        <div class="cap">PIM server <small>its own rented machine at IONOS</small></div>
+        <div class="box door"><div class="cap">Front door: nginx <small>The only thing facing the internet. Encrypts the connection, checks the Microsoft 365 sign-in, then passes the request to the right app.</small></div></div>
+        <div class="row">
+          <div class="box"><div class="cap">PIM app <small>The screens staff use, plus the connection point the transport and agents use. Every change is checked against the person's role and logged.</small></div></div>
+          <div class="box"><div class="cap">Agent workers <small>Run research jobs and submit proposals through the app, the same way a person would.</small></div></div>
+        </div>
+        <div class="box vault"><div class="cap">Database: Postgres <small>Reachable only by the PIM app. No person and no outside system connects to it directly.</small></div></div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="box"><div class="cap">Existing IONOS server <small>Automations, Shopify tools, Blueprint, other internal apps. Kept apart so a problem there cannot reach the PIM.</small></div></div>
+      <div class="box"><div class="cap">Off-site backup <small>A copy of the database stored away from the server.</small></div></div>
+      <div class="box"><div class="cap">Azure DevOps <small>All code, server setup and agent definitions, with history.</small></div></div>
+      <div class="box"><div class="cap">1Password <small>Every password and key. Never stored in the code.</small></div></div>
+    </div>
+  </div>
+  <div class="scroll"><table>
+    <tr><th>Topic</th><th>Good enough to start building</th><th>Needed before it runs live listings</th></tr>
+    <tr><td>Where it runs</td><td>The existing server, alongside everything else</td><td>Its own machine</td></tr>
+    <tr><td>Backups</td><td>Nightly copy sent off the server, one practice restore</td><td>Continuous backup, so at most minutes of work can be lost</td></tr>
+    <tr><td>People</td><td>One admin, setup stored in Azure DevOps</td><td>Two or three trained admins, written recovery steps</td></tr>
+    <tr><td>Testing</td><td>Build against sandbox accounts</td><td>A separate test copy of the PIM</td></tr>
+    <tr><td>Watching it</td><td>Nothing</td><td>Alerts for disk, memory and failed backups</td></tr>
+    <tr><td>Transport access</td><td>Read-only</td><td>Narrow write access, to return channel IDs, errors and issue flags</td></tr>
+  </table></div>
+  <p>The proposed IONOS server is large enough and its security basics are sound. The gaps are in how it is run, and all of them are in the right-hand column above.</p>
+</section>
+
+<section id="cutover">
+  <h2>21 December and after</h2>
+  <p>Rithum ends on 21 December 2026 with no overlap. Moving orders, stock and price to Versori is a separate project. The PIM is built in parallel and does not block it. Four PIM tasks still share that deadline.</p>
+  <div class="scroll"><table>
+    <tr><th>Before 21 December</th><th>Why it cannot wait</th></tr>
+    <tr><td>Export everything from Rithum: templates, defaults, mappings, lookup lists, listing IDs, SKU mappings</td><td>Access is assumed to end with the contract. This is the raw material for the PIM's rules and for loading today's listings.</td></tr>
+    <tr><td>Build one complete map of every live channel SKU to its NetSuite item</td><td>The Versori cutover needs it to route orders. The PIM is built on the same map.</td></tr>
+    <tr><td>Leave the current eCom record alone and build the new offer record beside it</td><td>The cutover depends on the current record.</td></tr>
+    <tr><td>Decide how new listings and content edits happen until the PIM is ready</td><td>After Rithum there is no content pipeline. Options: freeze, edit by hand in seller portals, or a basic Versori flow.</td></tr>
+  </table></div>
+  <h3>Bringing today's listings into the PIM</h3>
+  <ol>
+    <li>Pull every live listing from each channel, plus the Rithum export and the NetSuite eCom records. Load each as facts labelled with where they came from.</li>
+    <li>Register each existing listing in the PIM as <em>legacy</em>. The PIM sends nothing to a legacy listing, so nothing changes on the channels.</li>
+    <li>Work through listings by revenue and return rate. When a listing's content is verified and approved it becomes <em>managed</em>, and the PIM starts sending its content.</li>
+  </ol>
+</section>
+
+<section id="open">
+  <h2>Open questions</h2>
+  <div class="scroll"><table>
+    <tr><th>Question</th><th>Why it matters</th></tr>
+    <tr><td>Does each brand-and-make combination get its own part number and UPC, or a UPC exemption?</td><td>Decides whether the 4 branded products in Example 1 can exist as separate marketplace products.</td></tr>
+    <tr><td>Is splitting one part into per-make listings acceptable under each marketplace's duplicate rules?</td><td>The ad-targeting plan depends on it.</td></tr>
+    <tr><td>Offer record or item kit for mapping a seller SKU to an item?</td><td>Changes how orders arrive in NetSuite.</td></tr>
+    <tr><td>May RAP and SLP accounts both offer on one joined page?</td><td>Example 2 assumes yes.</td></tr>
+    <tr><td>Are RAP and SLP separate seller accounts on Walmart too?</td><td>Assumed yes. Confirmed for Amazon only.</td></tr>
+    <tr><td>Does packaging differ by brand?</td><td>Affects what the warehouse ships for each offer.</td></tr>
+    <tr><td>What does Blueprint return today: structured values with source links, or free text?</td><td>Decides how much of it can be reused as the first agent.</td></tr>
+    <tr><td>What happens to low-revenue listings that never get reviewed?</td><td>About 870,000 listings will not all get human attention.</td></tr>
+    <tr><td>Do brands share the same photos of a part, or does each brand need its own?</td><td>Decides whether images attach to the item or to the branded product in most cases.</td></tr>
+    <tr><td>Which product categories to use for the channel field research?</td><td>Required fields differ by category. Still to do.</td></tr>
+  </table></div>
+</section>
+
+</div>
