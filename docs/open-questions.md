@@ -14,6 +14,7 @@
 | 10 | Which product categories to use for the channel field research? | Required fields differ by category | | |
 | 11 | How do new listings and content edits happen between 21 December and the PIM being ready? | No content pipeline after Rithum | | |
 | 12 | Is there a fallback if the Versori cutover is not clean on 21 December? | Hard cut, four days before Christmas | | |
+| 13 | How do Fulfilled by Amazon (FBA) and Fulfilled by Merchant (FBM) fit the model? | Likely a separate offer on the same listing, with its own seller SKU, its own stock held at Amazon and no shipping template. To be talked through. | | |
 
 ## Answered
 

@@ -1,0 +1,20 @@
+# Describes the containers for the local PIM prototype.
+# Start everything:  docker compose up -d
+# Stop and remove:   docker compose down        (keeps the data volume)
+# Remove data too:   docker compose down -v
+
+services:
+  db:
+    image: postgres:17            # the official Postgres image, pinned to version 17
+    container_name: pim-db
+    environment:
+      POSTGRES_USER: pim
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}   # read from the .env file, which is not in Git
+      POSTGRES_DB: pim
+    ports:
+      - "127.0.0.1:5432:5432"     # reachable from this Mac only, not from the network
+    volumes:
+      - pim-data:/var/lib/postgresql/data   # attach the volume where Postgres keeps its files
+
+volumes:
+  pim-data:                       # storage that lives outside the container
