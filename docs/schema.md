@@ -112,16 +112,18 @@ erDiagram
 
 ## The NetSuite offer record
 
-`customrecord_pim_offer`, 16 fields, IDs prefixed `custrecord_pim_ofr_`.
-Offers number themselves `OFR-000001` and up.
+`customrecord_pim_offer`: the built-in Name plus 15 custom fields, IDs prefixed
+`custrecord_pim_ofr_`. An offer is identified by its seller SKU, which is the
+record's Name. Offers show on the item record under their own "PIM Offers" tab
+(`custtab_pim_offers`).
 
 | Field | Type | Filled by |
 |---|---|---|
+| Name | The seller SKU (required) | Person |
 | Item | Link to item (required) | Person |
 | Seller Account | Link to eCommerce Accounts (required) | Person |
 | Channel | Text (required) | Person |
 | Variant | Text | Person |
-| Seller SKU | Text (required) | Person |
 | Price | Currency | Pricing team |
 | Fulfilment | Text | Person |
 | Shipping Template | Text | Person |

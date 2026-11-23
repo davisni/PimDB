@@ -8,21 +8,18 @@
   <allowquicksearch>T</allowquicksearch>
   <allowuiaccess>T</allowuiaccess>
   <description>One item sold on one channel from one seller account. Holds the commercial terms only; listing content lives in the PIM.</description>
-  <enablenumbering>T</enablenumbering>
+  <enablenumbering>F</enablenumbering>
   <enablesystemnotes>T</enablesystemnotes>
   <includeinsearchmenu>T</includeinsearchmenu>
   <includename>T</includename>
   <isinactive>F</isinactive>
-  <numberinginit>1</numberinginit>
-  <numberingmindigits>6</numberingmindigits>
-  <numberingprefix>OFR-</numberingprefix>
   <recordname>PIM Offer</recordname>
   <showid>T</showid>
   <showlastmodified>T</showlastmodified>
   <shownotes>T</shownotes>
   <customrecordcustomfields>
 
-    <!-- What is sold, where -->
+    <!-- What is sold, where. The record's built-in Name field holds the seller SKU. -->
     <customrecordcustomfield scriptid="custrecord_pim_ofr_item">
       <accesslevel>2</accesslevel>
       <description>The inventory item being sold.</description>
@@ -33,6 +30,7 @@
       <isparent>T</isparent>
       <label>Item</label>
       <onparentdelete>NO_ACTION</onparentdelete>
+      <parentsubtab>[scriptid=custtab_pim_offers]</parentsubtab>
       <searchlevel>2</searchlevel>
       <selectrecordtype>-10</selectrecordtype>
       <showinlist>T</showinlist>
@@ -76,20 +74,6 @@
       <help>The angle this listing takes: an equipment make, a reference number, or blank.</help>
       <ismandatory>F</ismandatory>
       <label>Variant</label>
-      <searchlevel>2</searchlevel>
-      <showinlist>T</showinlist>
-      <storevalue>T</storevalue>
-    </customrecordcustomfield>
-
-    <customrecordcustomfield scriptid="custrecord_pim_ofr_sku">
-      <accesslevel>2</accesslevel>
-      <description>The SKU the channel knows this offer by. Must be unique per seller account and channel.</description>
-      <displaytype>NORMAL</displaytype>
-      <fieldtype>TEXT</fieldtype>
-      <globalsearch>T</globalsearch>
-      <help>The SKU the channel knows this offer by. Must be unique per seller account and channel.</help>
-      <ismandatory>T</ismandatory>
-      <label>Seller SKU</label>
       <searchlevel>2</searchlevel>
       <showinlist>T</showinlist>
       <storevalue>T</storevalue>

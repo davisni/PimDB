@@ -1,4 +1,12 @@
 <manifest projecttype="ACCOUNTCUSTOMIZATION">
-    <projectname>netsuite</projectname>
-    <frameworkversion>1.0</frameworkversion>
+  <projectname>netsuite</projectname>
+  <frameworkversion>1.0</frameworkversion>
+  <dependencies>
+    <features>
+      <feature required="true">CUSTOMRECORDS</feature>
+    </features>
+    <objects>
+      <object>customrecord_ecommerce_accounts</object>
+    </objects>
+  </dependencies>
 </manifest>
