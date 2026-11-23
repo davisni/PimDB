@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% set active = 'offers' %}
+{% block title %}Offers and listings · PIM prototype{% endblock %}
+{% block content %}
+<h1>Offers and listings</h1>
+<p class="lede">Managed offers are the new, clean ones the PIM builds content for. Prices and B0EXAMPLE IDs are invented.</p>
+<div class="scroll">
+<table>
+  <thead><tr><th>Item</th><th>Seller account</th><th>Channel</th><th>Variant</th><th>Seller SKU</th><th>Price</th><th>Type</th><th>Brand on listing</th><th>Channel ID</th><th>Status</th><th></th></tr></thead>
+  <tbody>
+    {% for o in offers %}
+    <tr>
+      <td class="mono">{{ o.item_sku }}</td>
+      <td>{{ o.seller_account }}</td>
+      <td>{{ o.channel_name }}</td>
+      <td>{{ o.variant or 'none' }}</td>
+      <td class="mono">{{ o.seller_sku }}</td>
+      <td class="num">{{ "%.2f"|format(o.price) }}</td>
+      <td>{{ o.listing_type }}</td>
+      <td>{{ o.brand_on_listing }}</td>
+      <td class="mono">{{ o.channel_listing_id or 'not yet' }}</td>
+      <td><span class="pill {{ o.status }}">{{ o.status|replace('_', ' ') }}</span>
+        {% if o.status_message %}<div class="note">{{ o.status_message }}</div>{% endif %}</td>
+      <td><a href="/listings/{{ o.listing_id }}">Preview</a></td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+</div>
+
+<h2>Legacy listings</h2>
+<p>Existing listings found on the Ecom Records. The PIM knows they exist and sends nothing to them.</p>
+<table class="narrow">
+  <thead><tr><th>Channel</th><th>Listings</th></tr></thead>
+  <tbody>{% for row in legacy %}<tr><td>{{ row.channel_name }}</td><td class="num">{{ row.listings }}</td></tr>{% endfor %}</tbody>
+</table>
+{% endblock %}

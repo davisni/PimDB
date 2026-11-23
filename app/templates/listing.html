@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% set active = 'offers' %}
+{% block title %}Listing preview · PIM prototype{% endblock %}
+{% block content %}
+<p><a href="/offers">Back to offers</a></p>
+<h1>Listing preview <small>{{ listing.channel_name }} · {{ listing.seller_sku or listing.channel_listing_id }}</small></h1>
+
+<dl class="facts-row">
+  <div><dt>Brand on listing</dt><dd>{{ listing.brand_on_listing }}</dd></div>
+  <div><dt>Sold by</dt><dd>{{ listing.seller_account or 'none' }}</dd></div>
+  <div><dt>Ships from</dt><dd>{{ listing.fulfilment or 'none' }}</dd></div>
+  <div><dt>Variant</dt><dd>{{ listing.variant or 'none' }}</dd></div>
+  <div><dt>Type</dt><dd>{{ listing.listing_type }}</dd></div>
+  <div><dt>Channel ID</dt><dd class="mono">{{ listing.channel_listing_id or 'not yet' }}</dd></div>
+</dl>
+
+{% if listing.listing_type == 'joined' %}
+  <p class="banner warn">This is someone else's page. The PIM writes no content for it; it only checks the page against our facts.</p>
+  {% if listing.status_message %}<p class="banner bad">{{ listing.status_message }}</p>{% endif %}
+{% elif listing.control == 'legacy' %}
+  <p class="banner warn">Legacy listing. The PIM sends nothing to it.</p>
+{% else %}
+  {% if blockers %}
+    <div class="banner bad"><strong>Not ready to publish</strong><ul>{% for b in blockers %}<li>{{ b }}</li>{% endfor %}</ul></div>
+  {% else %}
+    <p class="banner ok"><strong>Passes every channel rule.</strong></p>
+  {% endif %}
+  {% if waiting %}<p class="banner warn">{{ waiting }} more claim{{ '' if waiting == 1 else 's' }} that could appear here {{ 'is' if waiting == 1 else 'are' }} <a href="/review">waiting for review</a>.</p>{% endif %}
+  {% for n in notes %}<p class="note">{{ n }}</p>{% endfor %}
+
+  <h2>What would be sent to {{ listing.channel_name }}</h2>
+  <table>
+    <thead><tr><th>Field</th><th>Value</th><th>Rule</th><th>Check</th></tr></thead>
+    <tbody>
+      {% for f in fields %}
+      <tr>
+        <td class="mono">{{ f.rule.field_code }}</td>
+        <td>
+          {% if f.vals|length > 1 %}<ol class="values">{% for v in f.vals %}<li>{{ v }}</li>{% endfor %}</ol>
+          {% elif f.vals %}{{ f.vals[0] }}{% else %}<span class="empty">empty</span>{% endif %}
+        </td>
+        <td class="rule">
+          {{ 'Required' if f.rule.is_required else 'Optional' }}{% if f.rule.max_length %}, up to {{ f.rule.max_length }} characters{% endif %}{% if f.rule.max_items %}, up to {{ f.rule.max_items }} items{% endif %}
+          {% if f.rule.max_length and f.vals|length == 1 %}<div class="note">{{ f.vals[0]|length }} used</div>{% endif %}
+          {% if f.rule.is_assumed %}<div class="note">assumed rule</div>{% endif %}
+        </td>
+        <td>{% if f.problems %}{% for p in f.problems %}<span class="pill rejected">{{ p }}</span>{% endfor %}{% else %}<span class="pill approved">ok</span>{% endif %}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <h2>Built from these approved facts</h2>
+  <ul class="used">
+    {% for f in used %}<li>{{ f.attribute_label }}{% if f.make %} ({{ f.make }}){% endif %}: <strong>{{ f.value }}</strong> <span class="note">{{ f.sources|length }} sources</span></li>{% endfor %}
+  </ul>
+{% endif %}
+{% endblock %}

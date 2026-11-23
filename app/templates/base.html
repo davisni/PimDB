@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}PIM prototype{% endblock %}</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <header class="top">
+    <div class="wrap">
+      <span class="brand">PIM prototype</span>
+      <nav>
+        <a href="/items/1" {% if active == 'item' %}class="on"{% endif %}>Item</a>
+        <a href="/items/1/before" {% if active == 'before' %}class="on"{% endif %}>Before</a>
+        <a href="/review" {% if active == 'review' %}class="on"{% endif %}>Review queue</a>
+        <a href="/offers" {% if active == 'offers' %}class="on"{% endif %}>Offers and listings</a>
+      </nav>
+      <span class="demo">Demo data</span>
+    </div>
+  </header>
+  <main class="wrap">
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>

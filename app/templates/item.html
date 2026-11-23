@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% set active = 'item' %}
+{% block title %}{{ item.sku }} · PIM prototype{% endblock %}
+{% block content %}
+<h1>{{ item.sku }} <small>{{ item.description }}</small></h1>
+<p class="lede">Everything the PIM believes about this part. Each line is one fact, with where it came from and whether a person has approved it.</p>
+
+<div class="tiles">
+  <a class="tile" href="/items/{{ item.id }}/before"><b>{{ counts.records }}</b> Ecom Records today</a>
+  <div class="tile"><b>{{ total }}</b> distinct claims found in them</div>
+  <div class="tile"><b>{{ status_counts.approved }}</b> approved</div>
+  <a class="tile" href="/review"><b>{{ status_counts.proposed }}</b> waiting for review</a>
+  <div class="tile"><b>{{ status_counts.rejected }}</b> rejected</div>
+  <a class="tile" href="/offers"><b>{{ counts.offers }}</b> managed offers, {{ counts.legacy_listings }} legacy listings</a>
+</div>
+
+{% set actions = false %}
+{% include "_fact_table.html" %}
+{% endblock %}

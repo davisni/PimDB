@@ -16,5 +16,17 @@ services:
     volumes:
       - pim-data:/var/lib/postgresql/data   # attach the volume where Postgres keeps its files
 
+  app:
+    build: ./app                  # built from app/Dockerfile, not downloaded
+    container_name: pim-app
+    environment:
+      DATABASE_URL: postgresql://pim:${POSTGRES_PASSWORD}@db:5432/pim   # "db" is the service above
+    ports:
+      - "127.0.0.1:8000:8000"     # the screens, at http://localhost:8000
+    volumes:
+      - ./app:/app                # share the app folder, so edits appear without a rebuild
+    depends_on:
+      - db
+
 volumes:
   pim-data:                       # storage that lives outside the container

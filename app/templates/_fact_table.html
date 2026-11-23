@@ -1,0 +1,42 @@
+{# Renders grouped facts. Set `actions` to true to show approve and reject buttons. #}
+{% for attribute, makes in groups.items() %}
+<section class="group">
+  <h2>{{ attribute }}</h2>
+  {% for make, facts in makes.items() %}
+  {% if make %}<h3>{{ make }}</h3>{% endif %}
+  <table>
+    <thead>
+      <tr><th>Value</th><th>Status</th><th>Confidence</th><th>Evidence</th>{% if actions %}<th>Decision</th>{% endif %}</tr>
+    </thead>
+    <tbody>
+      {% for f in facts %}
+      <tr>
+        <td class="value">{% if f.is_negative %}<span class="neg">NOT</span> {% endif %}{{ f.value }}</td>
+        <td><span class="pill {{ f.status }}">{{ f.status }}</span>
+          {% if f.decision_note %}<div class="note">{{ f.decision_note }}</div>{% endif %}</td>
+        <td class="num">{{ "%.0f"|format(f.confidence * 100) }}%</td>
+        <td>
+          <details>
+            <summary>{{ f.sources|length }} source{{ '' if f.sources|length == 1 else 's' }}</summary>
+            <ul class="sources">
+              {% for s in f.sources %}
+              <li><strong>{{ s.label }}</strong>{% if s.excerpt %}<div class="excerpt">{{ s.excerpt }}</div>{% endif %}</li>
+              {% endfor %}
+            </ul>
+          </details>
+        </td>
+        {% if actions %}
+        <td>
+          <form method="post" action="/facts/{{ f.id }}/decide" class="decide">
+            <button name="action" value="approve" class="ok">Approve</button>
+            <button name="action" value="reject" class="bad">Reject</button>
+          </form>
+        </td>
+        {% endif %}
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% endfor %}
+</section>
+{% endfor %}

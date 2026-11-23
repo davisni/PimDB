@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% set active = 'before' %}
+{% block title %}Before · PIM prototype{% endblock %}
+{% block content %}
+<h1>Before <small>{{ item.sku }} in NetSuite today</small></h1>
+<p class="lede">The {{ records|length }} Ecom Records for this one part, exactly as read from the sandbox. Each carries its own copy of the title, models and reference numbers.</p>
+<div class="scroll">
+<table>
+  <thead><tr><th>Record</th><th>Account</th><th>Seller SKU</th><th>State</th><th>Title</th><th>Models</th><th>Reference numbers</th><th>Amazon</th><th>eBay</th><th>Walmart</th></tr></thead>
+  <tbody>
+    {% for r in records %}{% set p = r.payload %}
+    <tr {% if p.isinactive == 'T' %}class="dim"{% endif %}>
+      <td class="num">{{ r.external_id }}</td>
+      <td>{{ p.account }}</td>
+      <td class="mono">{{ p.custrecord_sku or '' }}</td>
+      <td>{{ 'inactive' if p.isinactive == 'T' else 'active' }}</td>
+      <td>{{ p.custrecord_title_long or '' }}</td>
+      <td>{{ p.custrecord_models or '' }}</td>
+      <td>{{ p.custrecord_mpn or '' }}</td>
+      <td class="mono">{{ p.custrecord_a_id or '' }}</td>
+      <td class="mono">{{ p.custrecord_e_id or '' }}</td>
+      <td class="mono">{{ p.custrecord_w_id or '' }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+</div>
+{% endblock %}

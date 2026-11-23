@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% set active = 'review' %}
+{% block title %}Review queue · PIM prototype{% endblock %}
+{% block content %}
+<h1>Review queue <small>{{ item.sku }}</small></h1>
+<p class="lede">{{ total }} claims are waiting for a decision. Open the evidence to see which records each one came from. Approving a claim makes it available to listings straight away.</p>
+{% if total == 0 %}<p class="empty">Nothing is waiting for review.</p>{% endif %}
+{% set actions = true %}
+{% include "_fact_table.html" %}
+{% endblock %}
